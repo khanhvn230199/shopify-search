@@ -49,7 +49,7 @@ pub struct ProductNode {
     pub description: Option<String>,
     pub vendor: Option<String>,
     pub product_type: Option<String>,
-    pub tags: Vec<String>,
+    pub tags: Option<Vec<String>>,
     pub created_at: Option<String>,
     pub updated_at: Option<String>,
     pub media: Media,

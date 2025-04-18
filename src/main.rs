@@ -10,11 +10,7 @@ use actix_web::{
     App, Error, HttpServer, middleware::Logger, body::MessageBody, dev::{ServiceFactory, ServiceRequest, ServiceResponse}
 };
 use shopify_search::{
-    services::user_service::{interface::UserService, user_serviece::UserServiceImpl},
-    repositories:: user_repository::interface::UserRepository,
-    repositories::postgres_repository::PostgresRepository,
-    router::auth_router::init_auth_routes,
-    utils::hugging_face::embedding::get_embedding_async,
+    repositories::{postgres_repository::PostgresRepository,  user_repository::interface::UserRepository}, router::auth_router::init_auth_routes, services::user_service::{interface::UserService, user_serviece::UserServiceImpl}, utils::hugging_face::embedding::get_embedding_data
 };
 use std::sync::Arc;
 pub struct Container {
@@ -67,10 +63,13 @@ pub fn create_app(container: Arc<Container>) -> App<
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
      // Gọi trước khi chạy server hoặc song song tùy bạn
-     if let Err(err) = get_embedding_async().await {
-        eprintln!("Error in embedding: {}", err);
-    }
+     let postgres_pool = PostgresPool::new().await.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+    //  if let Err(err) = get_embedding_async(postgres_pool.pool.clone()).await {
+    //     eprintln!("Error in embedding: {}", err);
+    // }
 
+    let result = get_embedding_data(postgres_pool.pool.clone(), "Collection Snowboard: Hydrogen").await;
+    println!("Result: {:?}", result);
     let address = "127.0.0.1:8080";
     let container: Arc<Container> = Arc::new(Container::new().await.unwrap());
     let server = HttpServer::new(move || {
